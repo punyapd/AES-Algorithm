@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AES </title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        color: #4caf50;
+      }
+
+      form {
+        margin-bottom: 30px;
+      }
+
+      h2 {
+        color: #4caf50;
+      }
+
+      textarea,
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      p {
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        word-break: break-word;
+      }
+
+      .form-section {
+        margin-bottom: 40px;
+      }
+
+      .form-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .result {
+        margin-top: 20px;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 20px;
+        color: #777;
+      }
+    </style>
+    <script>
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      const csrftoken = getCookie("csrftoken");
+
+      function encryptText() {
+        const form = document.getElementById("encrypt-form");
+        const formData = new FormData(form);
+
+        fetch("/encrypt/", {
+          method: "POST",
+          headers: { "X-CSRFToken": csrftoken },
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.encrypted_text) {
+              document.getElementById("encrypted-text").textContent =
+                data.encrypted_text;
+              document.getElementById("encryption-key").textContent = data.key;
+            } else {
+              alert("Encryption failed");
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function decryptText() {
+        const form = document.getElementById("decrypt-form");
+        const formData = new FormData(form);
+
+        fetch("/decrypt/", {
+          method: "POST",
+          headers: { "X-CSRFToken": csrftoken },
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.decrypted_text) {
+              document.getElementById("decrypted-text").textContent =
+                data.decrypted_text;
+            } else {
+              alert("Decryption failed: " + data.details);
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>AES Encryption and Decryption</h1>
+
+      <div class="form-section">
+        <form id="encrypt-form" method="post">
+          {% csrf_token %}
+          <h2>Encrypt</h2>
+          <textarea
+            name="text"
+            placeholder="Enter text to encrypt"
+            rows="5"
+          ></textarea
+          ><br />
+          <button type="button" onclick="encryptText()">Encrypt</button>
+          <div class="result">
+            <p>Encrypted Text: <span id="encrypted-text"></span></p>
+            <p>Encryption Key: <span id="encryption-key"></span></p>
+          </div>
+        </form>
+      </div>
+
+      <div class="form-section">
+        <form id="decrypt-form" method="post">
+          {% csrf_token %}
+          <h2>Decrypt</h2>
+          <textarea
+            name="encrypted_text"
+            placeholder="Enter text to decrypt"
+            rows="5"
+          ></textarea
+          ><br />
+          <input
+            type="text"
+            name="key"
+            placeholder="Enter decryption key"
+          /><br />
+          <button type="button" onclick="decryptText()">Decrypt</button>
+          <div class="result">
+            <p>Decrypted Text: <span id="decrypted-text"></span></p>
+          </div>
+        </form>
+      </div>
+
+      <div class="footer">
+        <p>&copy; 2024 AES Encryption Service</p>
+      </div>
+    </div>
+  </body>
+</html>
